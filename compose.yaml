@@ -1,7 +1,8 @@
 services:
   backup:
     build: .
-    container_name: backup
+    container_name: misskey-backup
+    restart: always
     networks:
       - misskey_internal_network
       - external_network
@@ -10,30 +11,16 @@ services:
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
     healthcheck:
-      test: ['CMD-SHELL', "test -f /var/log/cron.log && grep -q 'Backup succeeded' /var/log/cron.log"]
+      test: ["CMD-SHELL", "test -f /var/log/cron.log && grep -q 'Backup succeeded' /var/log/cron.log"]
       interval: 1m
       timeout: 10s
       retries: 3
       start_period: 30s
     logging:
-      driver: 'json-file'
       options:
-        max-size: '10m'
-        max-file: '3'
-
-  filen:
-    image: filen/cli:latest
-    networks:
-      - external_network
-    env_file:
-      - ./config/.env
-    volumes:
-      - /opt/misskey-backup/backups:/backups:ro
-
-networks:
-  misskey_internal_network:
-    external: true
-    name: misskey_internal_network
-  external_network:
-    driver: bridge
-
+        max-size: 5m
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1g'

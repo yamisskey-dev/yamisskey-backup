@@ -1,16 +1,13 @@
-FROM postgres:15-alpine
+FROM debian:trixie-slim
 
-ARG RCLONE_CONFIG_BACKUP_ENDPOINT
-ARG RCLONE_CONFIG_BACKUP_ACCESS_KEY_ID
-ARG RCLONE_CONFIG_BACKUP_SECRET_ACCESS_KEY
-ARG RCLONE_CONFIG_BACKUP_BUCKET_ACL
-
-# install tools
-RUN apk update
-RUN apk add curl unzip p7zip postgresql-client
-
-# rclone
-RUN curl https://rclone.org/install.sh | bash
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    p7zip-full \
+    curl \
+    bash \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl https://rclone.org/install.sh | bash \
+    && curl -sL https://filen.io/cli.sh | bash
 
 RUN mkdir -p /root/.config/rclone
 COPY ./config/rclone.conf /root/.config/rclone/rclone.conf
