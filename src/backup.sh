@@ -30,14 +30,6 @@ if [ $? -eq 0 ] && [ $FILEN_STATUS -eq 0 ]; then
    if [ -n "$NOTIFICATION" ]; then
        curl -X POST -F content="✅バックアップが完了しました。(${COMPRESSED})" ${DISCORD_WEBHOOK_URL} &> /dev/null
    fi
-
-   # 古いバックアップの削除
-   CUTOFF_DATE=$(date -d "7 days ago" +%Y-%m-%d)
-   BACKUPS=$(filen --email $FILEN_EMAIL --password $FILEN_PASSWORD ls /backups/misskey/ | grep -v "$CUTOFF_DATE")
-
-   for backup in $BACKUPS; do
-       filen --email $FILEN_EMAIL --password $FILEN_PASSWORD rm "/backups/misskey/$backup"
-   done
 else
    echo "Backup failed" >> /var/log/cron.log
 
