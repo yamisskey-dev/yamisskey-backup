@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     bash \
     cron \
     && rm -rf /var/lib/apt/lists/* \
-    && curl https://rclone.org/install.sh | bash
+    && curl https://rclone.org/install.sh | bash \
+    && curl -sL https://filen.io/cli.sh | bash
 
 RUN mkdir -p /root/.config/rclone
 COPY ./config/rclone.conf /root/.config/rclone/rclone.conf
