@@ -9,6 +9,20 @@ services:
       - ./config/.env
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
+    healthcheck:
+      test: ["CMD", "test", "-f", "/var/log/cron.log"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      db:
+        condition: service_healthy
 
 networks:
   misskey_internal_network:
