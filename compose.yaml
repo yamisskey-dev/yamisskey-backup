@@ -10,6 +10,7 @@ services:
       - ./config/.env
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
+      - ./filen-backup:/root/.config/filen-cli  # Filen CLIの設定を永続化
     healthcheck:
       test: ["CMD-SHELL", "test -f /var/log/cron.log && grep -q 'Backup succeeded' /var/log/cron.log"]
       interval: 1m
@@ -21,6 +22,21 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  filen-backup:
+    image: filen/cli:latest
+    networks:
+      - external_network
+    volumes:
+      - ./filen-backup:/root/.config/filen-cli  # 設定の共有
+    env_file:
+      - ./config/.env
+    command: >
+      --email ${FILEN_EMAIL}
+      --password ${FILEN_PASSWORD}
+      webdav
+      --w-user ${FILEN_WEBDAV_USER}
+      --w-password ${FILEN_WEBDAV_PASSWORD}
 
 networks:
   misskey_internal_network:
