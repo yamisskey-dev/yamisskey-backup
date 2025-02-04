@@ -1,5 +1,10 @@
 FROM debian:trixie-slim
 
+ARG RCLONE_CONFIG_BACKUP_ENDPOINT
+ARG RCLONE_CONFIG_BACKUP_ACCESS_KEY_ID
+ARG RCLONE_CONFIG_BACKUP_SECRET_ACCESS_KEY
+ARG RCLONE_CONFIG_BACKUP_BUCKET_ACL
+
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     p7zip-full \
@@ -23,15 +28,12 @@ COPY ./config/rclone.conf /root/.config/rclone/rclone.conf
 #bucket_acl = ${RCLONE_CONFIG_BACKUP_BUCKET_ACL}
 #EOF
 
-# backup script
+RUN mkdir -p /opt/misskey-backup/backups /var/spool/cron/crontabs
+
 COPY ./src/backup.sh /root/
-RUN chmod +x /root/backup.sh
-
-RUN mkdir -p /opt/misskey-backup/backups
-
-# crontab
-RUN mkdir -p /var/spool/cron/crontabs
 COPY ./config/crontab /var/spool/cron/crontabs/root
-RUN chmod 0644 /var/spool/cron/crontabs/root
 
-CMD sh -c "crond -l 0 -f"
+RUN chmod +x /root/backup.sh && \
+    chmod 0644 /var/spool/cron/crontabs/root
+
+CMD ["cron", "-l", "0", "-f"]
