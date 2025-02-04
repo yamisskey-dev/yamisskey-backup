@@ -29,7 +29,7 @@ COPY ./config/rclone.conf /root/.config/rclone/rclone.conf
 COPY ./src/backup.sh /root/
 RUN chmod +x /root/backup.sh
 
-RUN mkdir -p /misskey-data/backups
+RUN mkdir -p /opt/misskey-backup/backups
 
 # crontab
 RUN mkdir -p /var/spool/cron/crontabs

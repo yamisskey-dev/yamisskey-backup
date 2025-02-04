@@ -1,20 +1,16 @@
-version: '3'
-
 services:
   backup:
     build: .
     container_name: backup
     restart: always
     networks:
-      - internal_network  # Changed from misskey-postgres
+      - misskey_internal_network
     env_file:
       - ./config/.env
     volumes:
-      - misskey-data:/misskey-data
+      - /opt/misskey-backup/backups:/opt/misskey-backup/backups
 
 networks:
-  internal_network:
-    external: true  # This will use the existing Misskey internal network
-volumes:
-  misskey-data:
-
+  misskey_internal_network:
+    external: true
+    name: misskey_internal_network
