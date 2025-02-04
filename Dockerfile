@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y \
     && curl https://rclone.org/install.sh | bash \
     && curl -sL https://filen.io/cli.sh | bash
 
+ENV PATH="/root/.filen-cli/bin:${PATH}"
+
 RUN mkdir -p /root/.config/rclone
 COPY ./config/rclone.conf /root/.config/rclone/rclone.conf
 #COPY <<EOF /root/.config/rclone/rclone.conf
