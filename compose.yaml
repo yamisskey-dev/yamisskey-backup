@@ -23,7 +23,7 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: '1g'
+          memory: '2g'
 
 networks:
   misskey_network:
