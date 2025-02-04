@@ -4,14 +4,14 @@ services:
     container_name: misskey-backup
     restart: always
     networks:
-      - misskey_internal_network
-      - external_network
+      - misskey_network
+      - backup_network
     env_file:
       - ./config/.env
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
     healthcheck:
-      test: ["CMD-SHELL", "test -f /var/log/cron.log && grep -q 'Backup succeeded' /var/log/cron.log"]
+      test: ['CMD-SHELL', "test -f /var/log/cron.log && grep -q 'Backup succeeded' /var/log/cron.log"]
       interval: 1m
       timeout: 10s
       retries: 3
@@ -24,3 +24,10 @@ services:
         limits:
           cpus: '1'
           memory: '1g'
+
+networks:
+  misskey_network:
+    external: true
+    name: misskey_internal_network
+  backup_network:
+
