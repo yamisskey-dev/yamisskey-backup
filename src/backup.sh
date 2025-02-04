@@ -18,33 +18,33 @@ pg_dump -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB > "$BACKUP_FILE" 2>>
 # Cloudflare R2にアップロード
 rclone copy --s3-upload-cutoff=5000M --multi-thread-cutoff 5000M "$COMPRESSED" backup:${R2_PREFIX}
 
-# Filenにアップロード
-filen upload "$COMPRESSED" "/backups/misskey/${BACKUP_DATE}/"
+# Filenコンテナでアップロード処理
+FILEN_STATUS=0
+docker exec filen filen upload "$COMPRESSED" "/backups/misskey/${BACKUP_DATE}/" || FILEN_STATUS=$?
 
-# 成功確認
-if [ $? -eq 0 ]; then
-    echo "Backup succeeded" >> /var/log/cron.log
-    # 成功通知
-    if [ -n "$NOTIFICATION" ]; then
-        curl -X POST -F content="✅バックアップが完了しました。(${COMPRESSED})" ${DISCORD_WEBHOOK_URL} &> /dev/null
-    fi
+# 成功確認 (R2とFilenの両方)
+if [ $? -eq 0 ] && [ $FILEN_STATUS -eq 0 ]; then
+   echo "Backup succeeded" >> /var/log/cron.log
 
-    # 1週間以上前のバックアップを削除（Filen）
-    CUTOFF_DATE=$(date -d "7 days ago" +%Y-%m-%d)
-    BACKUPS=$(filen ls /backups/misskey/ | grep -v "$CUTOFF_DATE")
+   if [ -n "$NOTIFICATION" ]; then
+       curl -X POST -F content="✅バックアップが完了しました。(${COMPRESSED})" ${DISCORD_WEBHOOK_URL} &> /dev/null
+   fi
 
-    for backup in $BACKUPS; do
-        filen rm "/backups/misskey/$backup"
-    done
+   # 古いバックアップの削除
+   CUTOFF_DATE=$(date -d "7 days ago" +%Y-%m-%d)
+   BACKUPS=$(docker exec filen filen ls /backups/misskey/ | grep -v "$CUTOFF_DATE")
+
+   for backup in $BACKUPS; do
+       docker exec filen filen rm "/backups/misskey/$backup"
+   done
 else
-    # 失敗時
-    echo "Backup failed" >> /var/log/cron.log
-    # 通知設定の有無を確認
-    if [ -n "$NOTIFICATION" ]; then
-        curl -X POST -F content="❌バックアップに失敗しました。ログを確認してください。" ${DISCORD_WEBHOOK_URL} &> /dev/null
-    fi
+   echo "Backup failed" >> /var/log/cron.log
+
+   if [ -n "$NOTIFICATION" ]; then
+       curl -X POST -F content="❌バックアップに失敗しました。ログを確認してください。" ${DISCORD_WEBHOOK_URL} &> /dev/null
+   fi
 fi
 
-# ローカルバックアップファイルを削除
+# ローカルファイルの削除
 rm -rf "$BACKUP_FILE"
 rm -rf "$COMPRESSED"
