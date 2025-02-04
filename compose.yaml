@@ -5,6 +5,7 @@ services:
     restart: always
     networks:
       - misskey_internal_network
+      - external_network
     env_file:
       - ./config/.env
     volumes:
@@ -25,3 +26,5 @@ networks:
   misskey_internal_network:
     external: true
     name: misskey_internal_network
+  external_network:
+    driver: bridge
