@@ -10,7 +10,7 @@ services:
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
     healthcheck:
-      test: ["CMD", "test", "-f", "/var/log/cron.log"]
+      test: ["CMD-SHELL", "test -f /var/log/cron.log && grep -q 'Backup succeeded' /var/log/cron.log"]
       interval: 1m
       timeout: 10s
       retries: 3
@@ -20,9 +20,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    depends_on:
-      db:
-        condition: service_healthy
 
 networks:
   misskey_internal_network:
