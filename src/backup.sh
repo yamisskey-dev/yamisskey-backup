@@ -19,8 +19,9 @@ pg_dump -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB > "$BACKUP_FILE" 2>>
 rclone copy --s3-upload-cutoff=5000M --multi-thread-cutoff 5000M "$COMPRESSED" backup:${R2_PREFIX}
 
 # Filenにアップロード
+export PATH=$PATH:/root/.filen-cli/bin
 FILEN_STATUS=0
-/root/.filen-cli/bin/filen --email $FILEN_EMAIL --password $FILEN_PASSWORD upload "$COMPRESSED" "/backups/misskey/${BACKUP_DATE}/" || FILEN_STATUS=$?
+filen --email $FILEN_EMAIL --password $FILEN_PASSWORD upload "$COMPRESSED" "/backups/misskey/${BACKUP_DATE}/" || FILEN_STATUS=$?
 
 # 成功確認 (R2とFilenの両方)
 if [ $? -eq 0 ] && [ $FILEN_STATUS -eq 0 ]; then
@@ -32,10 +33,10 @@ if [ $? -eq 0 ] && [ $FILEN_STATUS -eq 0 ]; then
 
    # 古いバックアップの削除
    CUTOFF_DATE=$(date -d "7 days ago" +%Y-%m-%d)
-   BACKUPS=$(/root/.filen-cli/bin/filen --email $FILEN_EMAIL --password $FILEN_PASSWORD ls /backups/misskey/ | grep -v "$CUTOFF_DATE")
+   BACKUPS=$(filen --email $FILEN_EMAIL --password $FILEN_PASSWORD ls /backups/misskey/ | grep -v "$CUTOFF_DATE")
 
    for backup in $BACKUPS; do
-       /root/.filen-cli/bin/filen --email $FILEN_EMAIL --password $FILEN_PASSWORD rm "/backups/misskey/$backup"
+       filen --email $FILEN_EMAIL --password $FILEN_PASSWORD rm "/backups/misskey/$backup"
    done
 else
    echo "Backup failed" >> /var/log/cron.log
