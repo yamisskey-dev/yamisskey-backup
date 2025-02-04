@@ -31,12 +31,6 @@ services:
       - ./filen-backup:/root/.config/filen-cli  # 設定の共有
     env_file:
       - ./config/.env
-    command: >
-      --email ${FILEN_EMAIL}
-      --password ${FILEN_PASSWORD}
-      webdav
-      --w-user ${FILEN_WEBDAV_USER}
-      --w-password ${FILEN_WEBDAV_PASSWORD}
 
 networks:
   misskey_internal_network:
