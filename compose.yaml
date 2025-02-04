@@ -16,14 +16,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    logging:
-      options:
-        max-size: 5m
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: '2g'
 
 networks:
   misskey_network:
