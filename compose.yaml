@@ -24,5 +24,5 @@ networks:
     name: misskey_backup_network
     external: true
   external_network:
-    name: misskey_external_network
+    name: external_network
     external: true
