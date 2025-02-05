@@ -2,9 +2,13 @@ services:
   backup:
     build: .
     container_name: misskey-backup
+    security_opt:
+      - no-new-privileges:true
     restart: always
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
-      - misskey_network
       - backup_network
     env_file:
       - ./config/.env
@@ -18,8 +22,5 @@ services:
       start_period: 30s
 
 networks:
-  misskey_network:
-    external: true
-    name: misskey_internal_network
   backup_network:
-
+    internal: true
