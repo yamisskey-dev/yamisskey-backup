@@ -1,4 +1,7 @@
 #!/bin/sh
+if [ -f "/root/.env" ]; then
+    export $(grep -v '^#' /root/.env | xargs)
+fi
 
 # バックアップディレクトリの作成（日付別）
 BACKUP_DATE=$(TZ='Asia/Tokyo' date +%Y-%m-%d)
