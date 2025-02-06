@@ -36,4 +36,7 @@ COPY ./config/crontab /var/spool/cron/crontabs/root
 RUN chmod +x /root/backup.sh && \
     chmod 0644 /var/spool/cron/crontabs/root
 
-CMD ["cron", "-l", "0", "-f"]
+RUN touch /var/log/cron.log && \
+    chmod 0644 /var/log/cron.log
+
+CMD ["/bin/bash", "-c", "touch /var/log/cron.log && chmod 0644 /var/log/cron.log && cron -f"]

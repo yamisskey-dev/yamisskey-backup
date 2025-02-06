@@ -1,6 +1,7 @@
-#!/bin/sh
-if [ -f "/root/.env" ]; then
-    export $(grep -v '^#' /root/.env | xargs)
+#!/bin/bash
+# backup.shの先頭に追加
+if [ -f /config/.env ]; then
+    source /config/.env
 fi
 
 # バックアップディレクトリの作成（日付別）
