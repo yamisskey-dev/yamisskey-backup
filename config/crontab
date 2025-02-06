@@ -2,4 +2,4 @@
 #  misskey backup
 #  バックアップを自動実行する時間を定義します。
 # =============================================
-0 */12 * * * /bin/bash /root/backup.sh >> /var/log/cron.log 2>&1
+0 3,15 * * * /bin/bash /root/backup.sh >> /var/log/cron.log 2>&1
