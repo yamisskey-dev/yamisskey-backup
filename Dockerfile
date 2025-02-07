@@ -5,6 +5,7 @@ ARG RCLONE_CONFIG_BACKUP_ACCESS_KEY_ID
 ARG RCLONE_CONFIG_BACKUP_SECRET_ACCESS_KEY
 ARG RCLONE_CONFIG_BACKUP_BUCKET_ACL
 
+# 必要なパッケージのインストール
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     p7zip-full \
@@ -16,25 +17,26 @@ RUN apt-get update && apt-get install -y \
     && curl https://rclone.org/install.sh | bash \
     && curl -sL https://filen.io/cli.sh | bash
 
-RUN mkdir -p /root/.config/rclone /opt/misskey-backup/backups
-
+# rclone設定
+RUN mkdir -p /root/.config/rclone
 COPY ./config/rclone.conf /root/.config/rclone/rclone.conf
-COPY ./src/backup.sh /root/
-COPY ./config/crontab /etc/cron.d/backup-cron
 
-# 正しい権限設定
-RUN chmod +x /root/backup.sh && \
-    chmod 0644 /etc/cron.d/backup-cron && \
-    chown root:root /etc/cron.d/backup-cron
+# バックアップスクリプトの設定
+RUN mkdir -p /opt/misskey-backup/backups
+COPY ./src/backup.sh /usr/local/bin/misskey-backup
+RUN chmod +x /usr/local/bin/misskey-backup
+
+# cronジョブの設定
+COPY ./config/crontab /etc/cron.d/misskey-backup
+RUN chmod 0644 /etc/cron.d/misskey-backup \
+    && chown root:root /etc/cron.d/misskey-backup
 
 # ログファイルの設定
-RUN touch /var/log/cron.log && \
-    chmod 0644 /var/log/cron.log
+RUN touch /var/log/cron.log \
+    && chmod 0644 /var/log/cron.log
 
-# PATHの設定
+# システムPATHの設定
 RUN echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /etc/environment
 
-# 新しいcrontab設定方法
-RUN crontab /etc/cron.d/backup-cron
-
+# cronをフォアグラウンドで実行
 CMD ["cron", "-f"]
