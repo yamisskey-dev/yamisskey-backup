@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     bash \
     cron \
-    rsyslog \
     && rm -rf /var/lib/apt/lists/* \
     && curl https://rclone.org/install.sh | bash \
     && curl -sL https://filen.io/cli.sh | bash
@@ -42,4 +41,4 @@ RUN touch /var/log/cron.log && \
 
 RUN echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /etc/environment
 
-CMD ["/bin/bash", "-c", "rsyslogd && cron -f"]
+CMD ["cron", "-l", "0", "-f"]
