@@ -41,7 +41,7 @@ RUN chmod 0644 /etc/cron.d/misskey-backup \
 RUN echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /etc/environment
 
 # ログファイルの設定
-RUN touch /var/log/cron.log && chmod 0644 /var/log/cron.log
+RUN touch /var/log/cron.log
 
 # cronを初期化して起動
-CMD ["/bin/bash", "-c", "cron && tail -f /var/log/cron.log"]
+CMD ["/bin/bash", "-c", "cron && chmod 0644 /var/log/cron.log && tail -f /var/log/cron.log"]

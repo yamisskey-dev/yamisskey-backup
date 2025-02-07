@@ -14,6 +14,7 @@ services:
       - ./config/.env
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
+      - ./config/.env:/opt/misskey-backup/config/.env:ro
     healthcheck:
       test: ['CMD-SHELL', 'pgrep cron >/dev/null && (test ! -f /var/log/cron.log || (test -s /var/log/cron.log && ! grep -q "failed" /var/log/cron.log))']
       interval: 1m
