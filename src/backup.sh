@@ -1,7 +1,8 @@
 #!/bin/bash
-# 環境変数設定スクリプトの追加
-COPY ./src/env.sh /opt/misskey-backup/env.sh
-RUN chmod +x /opt/misskey-backup/env.sh
+# 環境変数の読み込み
+if [ -f /config/.env ]; then
+    source /config/.env
+fi
 
 # バックアップディレクトリの作成（日付別）
 BACKUP_DATE=$(TZ='Asia/Tokyo' date +%Y-%m-%d)
