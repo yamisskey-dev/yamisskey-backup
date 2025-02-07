@@ -15,11 +15,11 @@ services:
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
     healthcheck:
-      test: ['CMD-SHELL', "test ! -f /var/log/cron.log || (test -s /var/log/cron.log && ! grep -q 'failed' /var/log/cron.log)"]
+      test: ['CMD-SHELL', 'pgrep cron >/dev/null && (test ! -f /var/log/cron.log || (test -s /var/log/cron.log && ! grep -q "failed" /var/log/cron.log))']
       interval: 1m
       timeout: 10s
       retries: 3
-      start_period: 10m
+      start_period: 3m
 
 networks:
   backup_network:
