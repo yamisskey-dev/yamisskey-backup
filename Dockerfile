@@ -29,14 +29,14 @@ RUN chmod +x /usr/local/bin/misskey-backup
 # cronジョブの設定
 COPY ./config/crontab /etc/cron.d/misskey-backup
 RUN chmod 0644 /etc/cron.d/misskey-backup \
-    && chown root:root /etc/cron.d/misskey-backup
-
-# ログファイルの設定
-RUN touch /var/log/cron.log \
-    && chmod 0644 /var/log/cron.log
+    && chown root:root /etc/cron.d/misskey-backup \
+    && echo "" >> /etc/cron.d/misskey-backup  # 空行を追加
 
 # システムPATHの設定
 RUN echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /etc/environment
 
-# cronをフォアグラウンドで実行
-CMD ["cron", "-f"]
+# ログファイルの設定
+RUN touch /var/log/cron.log && chmod 0644 /var/log/cron.log
+
+# cronを初期化して起動
+CMD ["/bin/bash", "-c", "cron && tail -f /var/log/cron.log"]

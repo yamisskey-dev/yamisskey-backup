@@ -13,7 +13,7 @@ services:
     volumes:
       - /opt/misskey-backup/backups:/opt/misskey-backup/backups
     healthcheck:
-      test: ['CMD-SHELL', "test ! -f /var/log/cron.log || (test -s /var/log/cron.log && ! grep -q 'failed' /var/log/cron.log')"]
+      test: ['CMD-SHELL', "test ! -f /var/log/cron.log || (test -s /var/log/cron.log && ! grep -q 'failed' /var/log/cron.log)"]
       interval: 1m
       timeout: 10s
       retries: 3
@@ -26,4 +26,3 @@ networks:
   external_network:
     name: external_network
     external: true
-
