@@ -42,4 +42,4 @@ RUN touch /var/log/cron.log && \
 
 RUN echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /etc/environment
 
-CMD ["/bin/bash", "-c", "service rsyslog start && cron -f"]
+CMD ["/bin/bash", "-c", "rsyslogd && cron -f"]
