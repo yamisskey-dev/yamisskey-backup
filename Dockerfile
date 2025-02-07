@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     bash \
     cron \
+    procps \
     && rm -rf /var/lib/apt/lists/* \
     && curl https://rclone.org/install.sh | bash \
     && curl -sL https://filen.io/cli.sh | bash
