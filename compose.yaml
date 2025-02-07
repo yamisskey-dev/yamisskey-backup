@@ -5,6 +5,8 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: always
+    environment:
+      - TZ=Asia/Tokyo
     networks:
       - backup_network
       - external_network
