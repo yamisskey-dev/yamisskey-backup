@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     bash \
     cron \
+    rsyslog \
     && rm -rf /var/lib/apt/lists/* \
     && curl https://rclone.org/install.sh | bash \
     && curl -sL https://filen.io/cli.sh | bash
@@ -39,4 +40,6 @@ RUN chmod +x /root/backup.sh && \
 RUN touch /var/log/cron.log && \
     chmod 0644 /var/log/cron.log
 
-CMD ["/bin/bash", "-c", "touch /var/log/cron.log && chmod 0644 /var/log/cron.log && cron -f"]
+RUN echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /etc/environment
+
+CMD ["/bin/bash", "-c", "service rsyslog start && cron -f"]
