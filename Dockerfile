@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     cron \
     procps \
     gettext-base \
+    libsecret-1-dev \
     && rm -rf /var/lib/apt/lists/* \
     && curl https://rclone.org/install.sh | bash \
     && curl -sL https://filen.io/cli.sh | bash
