@@ -107,7 +107,7 @@ upload_to_linode() {
 
     # Linodeバケットへのアクセス確認
     echo "Checking Linode bucket access..." >> /var/log/cron.log
-    if ! rclone lsd linode: 2>> /var/log/cron.log; then
+    if ! rclone lsd linode:${LINODE_BUCKET} 2>> /var/log/cron.log; then
         echo "Error: Cannot access Linode bucket" >> /var/log/cron.log
         return 1
     fi
