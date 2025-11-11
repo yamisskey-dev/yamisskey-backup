@@ -84,48 +84,71 @@ upload_to_r2() {
     fi
 }
 
-# Filenへのアップロード関数
-upload_to_filen() {
-    echo "Uploading to Filen..." >> /var/log/cron.log
-    export PATH=$PATH:/root/.filen-cli/bin
+# Linode Object Storageへのアップロード関数
+upload_to_linode() {
+    echo "Uploading to Linode Object Storage..." >> /var/log/cron.log
 
     # ファイルの存在確認
     if [ ! -f "$COMPRESSED" ]; then
-        echo "Error: Backup file does not exist for Filen upload: $COMPRESSED" >> /var/log/cron.log
+        echo "Error: Backup file does not exist for Linode upload: $COMPRESSED" >> /var/log/cron.log
         return 1
     fi
 
     # ファイルサイズの確認
     filesize=$(stat -f%z "$COMPRESSED" 2>/dev/null || stat -c%s "$COMPRESSED" 2>/dev/null)
-    echo "Backup file size for Filen upload: $filesize bytes" >> /var/log/cron.log
+    echo "Backup file size for Linode upload: $filesize bytes" >> /var/log/cron.log
 
-    if filen --email $FILEN_EMAIL --password $FILEN_PASSWORD upload "$COMPRESSED" "/backups/misskey/${BACKUP_DATE}/" 2>> /var/log/cron.log; then
-        echo "Filen upload succeeded" >> /var/log/cron.log
-        return 0
+    # rcloneの設定確認
+    echo "Checking rclone configuration..." >> /var/log/cron.log
+    if ! rclone listremotes | grep -q "linode:"; then
+        echo "Error: rclone linode remote is not configured" >> /var/log/cron.log
+        return 1
+    fi
+
+    # Linodeバケットへのアクセス確認
+    echo "Checking Linode bucket access..." >> /var/log/cron.log
+    if ! rclone lsd linode: 2>> /var/log/cron.log; then
+        echo "Error: Cannot access Linode bucket" >> /var/log/cron.log
+        return 1
+    fi
+
+    # アップロード実行
+    echo "Starting Linode upload process..." >> /var/log/cron.log
+    if rclone copy --progress "$COMPRESSED" linode:${LINODE_BUCKET}/${LINODE_PREFIX} 2>> /var/log/cron.log; then
+        echo "Linode upload succeeded" >> /var/log/cron.log
+
+        # アップロード後のファイル確認
+        if rclone ls linode:${LINODE_BUCKET}/${LINODE_PREFIX}/$(basename "$COMPRESSED") 2>> /var/log/cron.log; then
+            echo "Linode upload verification succeeded" >> /var/log/cron.log
+            return 0
+        else
+            echo "Linode upload verification failed - file not found in bucket" >> /var/log/cron.log
+            return 1
+        fi
     else
-        echo "Filen upload failed with status $?" >> /var/log/cron.log
+        echo "Linode upload failed with status $?" >> /var/log/cron.log
         return 1
     fi
 }
 
 # 両方のアップロードを実行
 R2_SUCCESS=false
-FILEN_SUCCESS=false
+LINODE_SUCCESS=false
 
-# Filenへのアップロードを先に実行
-upload_to_filen
-if [ $? -eq 0 ]; then
-    FILEN_SUCCESS=true
-fi
-
-# R2へのアップロード
+# R2へのアップロードを先に実行
 upload_to_r2
 if [ $? -eq 0 ]; then
     R2_SUCCESS=true
 fi
 
+# Linodeへのアップロード
+upload_to_linode
+if [ $? -eq 0 ]; then
+    LINODE_SUCCESS=true
+fi
+
 # 結果の通知
-if [ "$R2_SUCCESS" = true ] || [ "$FILEN_SUCCESS" = true ]; then
+if [ "$R2_SUCCESS" = true ] || [ "$LINODE_SUCCESS" = true ]; then
     echo "Backup partially or fully succeeded" >> /var/log/cron.log
 
     if [ -n "$NOTIFICATION" ]; then
@@ -133,8 +156,8 @@ if [ "$R2_SUCCESS" = true ] || [ "$FILEN_SUCCESS" = true ]; then
         if [ "$R2_SUCCESS" = false ]; then
             MESSAGE+="⚠️ R2へのアップロードは失敗しました。\n"
         fi
-        if [ "$FILEN_SUCCESS" = false ]; then
-            MESSAGE+="⚠️ Filenへのアップロードは失敗しました。\n"
+        if [ "$LINODE_SUCCESS" = false ]; then
+            MESSAGE+="⚠️ Linodeへのアップロードは失敗しました。\n"
         fi
         curl -X POST -F content="$MESSAGE" ${DISCORD_WEBHOOK_URL} &> /dev/null
     fi
