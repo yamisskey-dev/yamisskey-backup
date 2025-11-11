@@ -53,25 +53,25 @@ upload_to_r2() {
 
     # rcloneの設定確認
     echo "Checking rclone configuration..." >> /var/log/cron.log
-    if ! rclone listremotes | grep -q "backup:"; then
-        echo "Error: rclone backup remote is not configured" >> /var/log/cron.log
+    if ! rclone listremotes | grep -q "r2:"; then
+        echo "Error: rclone r2 remote is not configured" >> /var/log/cron.log
         return 1
     fi
 
     # R2バケットへのアクセス確認
     echo "Checking R2 bucket access..." >> /var/log/cron.log
-    if ! rclone lsd backup: 2>> /var/log/cron.log; then
+    if ! rclone lsd r2: 2>> /var/log/cron.log; then
         echo "Error: Cannot access R2 bucket" >> /var/log/cron.log
         return 1
     fi
 
     # アップロード実行
     echo "Starting R2 upload process..." >> /var/log/cron.log
-    if rclone copy --s3-upload-cutoff=5000M --multi-thread-cutoff 5000M --progress "$COMPRESSED" backup:${R2_PREFIX} 2>> /var/log/cron.log; then
+    if rclone copy --s3-upload-cutoff=5000M --multi-thread-cutoff 5000M --progress "$COMPRESSED" r2:${R2_PREFIX} 2>> /var/log/cron.log; then
         echo "R2 upload succeeded" >> /var/log/cron.log
 
         # アップロード後のファイル確認
-        if rclone ls backup:${R2_PREFIX}/$(basename "$COMPRESSED") 2>> /var/log/cron.log; then
+        if rclone ls r2:${R2_PREFIX}/$(basename "$COMPRESSED") 2>> /var/log/cron.log; then
             echo "R2 upload verification succeeded" >> /var/log/cron.log
             return 0
         else
