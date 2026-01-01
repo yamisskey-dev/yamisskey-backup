@@ -46,29 +46,7 @@ NOTIFICATION=true
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK
 ```
 
-### 2. rclone.confの作成
-
-```bash
-nano config/rclone.conf
-```
-
-```ini
-[r2]
-type = s3
-provider = Cloudflare
-access_key_id = your_key
-secret_access_key = your_secret
-region = auto
-endpoint = https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
-bucket_acl = private
-
-[b2]
-type = b2
-account = your_account_id
-key = your_application_key
-```
-
-### 3. 起動
+### 2. 起動
 
 ```bash
 docker compose up -d

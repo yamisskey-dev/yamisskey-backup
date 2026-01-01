@@ -1,10 +1,5 @@
 FROM debian:trixie-slim
 
-ARG RCLONE_CONFIG_BACKUP_ENDPOINT
-ARG RCLONE_CONFIG_BACKUP_ACCESS_KEY_ID
-ARG RCLONE_CONFIG_BACKUP_SECRET_ACCESS_KEY
-ARG RCLONE_CONFIG_BACKUP_BUCKET_ACL
-
 # タイムゾーンの設定
 ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
@@ -22,9 +17,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && curl https://rclone.org/install.sh | bash
 
-# rclone設定
+# rclone設定ディレクトリ（設定は entrypoint.sh で環境変数から生成）
 RUN mkdir -p /root/.config/rclone
-COPY ./config/rclone.conf /root/.config/rclone/rclone.conf
 
 # バックアップスクリプトの設定
 RUN mkdir -p /opt/misskey-backup/backups
