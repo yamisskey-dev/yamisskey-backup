@@ -25,12 +25,9 @@ RUN mkdir -p /opt/misskey-backup/backups
 COPY ./src/backup.sh /usr/local/bin/misskey-backup
 RUN chmod +x /usr/local/bin/misskey-backup
 
-# 環境変数をcronに渡すためのエントリーポイントスクリプト
+# エントリーポイントスクリプト（rclone設定とcronジョブを環境変数から生成）
 COPY ./src/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
-# cronジョブの設定（テンプレートとして）
-COPY ./config/crontab.template /etc/cron.d/crontab.template
 
 # システムPATHの設定
 RUN echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" >> /etc/environment
