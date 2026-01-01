@@ -4,7 +4,7 @@ MisskeyのPostgreSQLデータベースを定期的にバックアップし、複
 
 ## 特徴
 
-- 🔄 二重バックアップ（Cloudflare R2 + Linode Object Storage）
+- 🔄 二重バックアップ（Cloudflare R2 + Backblaze B2）
 - 📦 7-Zipによる高圧縮
 - ⏰ 自動実行（cron、デフォルト: 毎日3:00, 15:00）
 - 🔔 Discord通知
@@ -34,12 +34,12 @@ RCLONE_CONFIG_R2_ACCESS_KEY_ID=your_key
 RCLONE_CONFIG_R2_SECRET_ACCESS_KEY=your_secret
 R2_PREFIX=backups
 
-# Linode Object Storage
-RCLONE_CONFIG_LINODE_ENDPOINT=https://jp-osa-1.linodeobjects.com
-RCLONE_CONFIG_LINODE_ACCESS_KEY_ID=your_key
-RCLONE_CONFIG_LINODE_SECRET_ACCESS_KEY=your_secret
-LINODE_BUCKET=your-bucket
-LINODE_PREFIX=backups
+# Backblaze B2
+RCLONE_CONFIG_B2_TYPE=b2
+RCLONE_CONFIG_B2_ACCOUNT=your_account_id
+RCLONE_CONFIG_B2_KEY=your_application_key
+B2_BUCKET=your-bucket
+B2_PREFIX=backups
 
 # Discord通知（オプション）
 NOTIFICATION=true
@@ -62,13 +62,10 @@ region = auto
 endpoint = https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
 bucket_acl = private
 
-[linode]
-type = s3
-provider = Other
-access_key_id = your_key
-secret_access_key = your_secret
-endpoint = https://jp-osa-1.linodeobjects.com
-acl = private
+[b2]
+type = b2
+account = your_account_id
+key = your_application_key
 ```
 
 ### 3. 起動
@@ -83,22 +80,6 @@ docker compose logs -f
 30日経過後に自動削除：
 
 ```bash
-# Linode
-export AWS_ACCESS_KEY_ID=your_key
-export AWS_SECRET_ACCESS_KEY=your_secret
-
-aws s3api put-bucket-lifecycle-configuration \
-  --endpoint-url https://jp-osa-1.linodeobjects.com \
-  --bucket your-bucket \
-  --lifecycle-configuration '{
-    "Rules": [{
-      "ID": "Auto-delete-old-backups-30days",
-      "Status": "Enabled",
-      "Filter": {"Prefix": "backups/"},
-      "Expiration": {"Days": 30}
-    }]
-  }'
-
 # Cloudflare R2
 export AWS_ACCESS_KEY_ID=your_r2_key
 export AWS_SECRET_ACCESS_KEY=your_r2_secret
@@ -114,6 +95,10 @@ aws s3api put-bucket-lifecycle-configuration \
       "Expiration": {"Days": 30}
     }]
   }'
+
+# Backblaze B2
+# B2のライフサイクルルールはWebコンソールまたはb2 CLIで設定
+# Bucket Settings > Lifecycle Settings > Keep only the last version
 ```
 
 ## 運用コマンド
@@ -146,8 +131,8 @@ docker exec misskey-backup rclone listremotes
 # R2アクセステスト
 docker exec misskey-backup rclone lsd r2:
 
-# Linodeアクセステスト
-docker exec misskey-backup rclone lsd linode:your-bucket
+# B2アクセステスト
+docker exec misskey-backup rclone lsd b2:
 ```
 
 ## アーキテクチャ
@@ -156,7 +141,7 @@ docker exec misskey-backup rclone lsd linode:your-bucket
 Docker Container (cron)
   ├─ pg_dump → 7z圧縮
   ├─ rclone → Cloudflare R2 (無料10GB)
-  └─ rclone → Linode Object Storage ($5/月)
+  └─ rclone → Backblaze B2 (無料10GB)
          ↓
     30日後自動削除
 ```
