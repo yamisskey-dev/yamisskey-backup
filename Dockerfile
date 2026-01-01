@@ -22,11 +22,11 @@ RUN mkdir -p /root/.config/rclone
 
 # バックアップスクリプトの設定
 RUN mkdir -p /opt/misskey-backup/backups
-COPY ./src/backup.sh /usr/local/bin/misskey-backup
+COPY ./backup.sh /usr/local/bin/misskey-backup
 RUN chmod +x /usr/local/bin/misskey-backup
 
 # エントリーポイントスクリプト（rclone設定とcronジョブを環境変数から生成）
-COPY ./src/entrypoint.sh /entrypoint.sh
+COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # システムPATHの設定

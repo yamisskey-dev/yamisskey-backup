@@ -15,8 +15,8 @@ MisskeyのPostgreSQLデータベースを定期的にバックアップし、複
 ### 1. 設定ファイルの作成
 
 ```bash
-cp config/.env.sample config/.env
-nano config/.env
+cp .env.sample .env
+nano .env
 ```
 
 必須項目を設定：

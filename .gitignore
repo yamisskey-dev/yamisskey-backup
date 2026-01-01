@@ -1,3 +1,2 @@
-backups/
-config/
+.env
 secrets.yml
