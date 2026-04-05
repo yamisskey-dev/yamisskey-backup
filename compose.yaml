@@ -22,5 +22,5 @@ services:
 
 networks:
   backup_network:
-    name: misskey_backup_network
+    name: backup_network
     external: true
