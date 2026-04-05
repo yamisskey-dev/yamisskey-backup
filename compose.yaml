@@ -9,6 +9,7 @@ services:
       - TZ=Asia/Tokyo
     networks:
       - backup_network
+      - external_network
     env_file:
       - ./.env
     volumes:
@@ -23,4 +24,7 @@ services:
 networks:
   backup_network:
     name: backup_network
+    external: true
+  external_network:
+    name: external_network
     external: true
