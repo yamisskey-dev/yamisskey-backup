@@ -13,6 +13,11 @@ mkdir -p "$BACKUP_DIR"
 BACKUP_FILE="${BACKUP_DIR}/${POSTGRES_DB}_$(TZ='Asia/Tokyo' date +%Y-%m-%d_%H-%M).sql"
 COMPRESSED="${BACKUP_FILE}.7z"
 
+# B2用の固定ファイル名（日付なし）。毎回同名で上書きし、旧バージョンを
+# B2のLifecycle（Keep prior versions）に世代管理させる。
+# R2は従来通り COMPRESSED の日付入り名でアップロードする。
+B2_OBJECT="${POSTGRES_DB}.sql.7z"
+
 # PostgreSQLダンプの作成
 echo "Creating PostgreSQL dump..." >> /var/log/cron.log
 if ! pg_dump -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB > "$BACKUP_FILE" 2>> /var/log/cron.log; then
@@ -112,13 +117,13 @@ upload_to_b2() {
         return 1
     fi
 
-    # アップロード実行
+    # アップロード実行（固定ファイル名で上書き → 旧バージョンはB2のLifecycleで世代管理）
     echo "Starting B2 upload process..." >> /var/log/cron.log
-    if rclone copy --progress "$COMPRESSED" b2:${B2_BUCKET}/${B2_PREFIX} 2>> /var/log/cron.log; then
+    if rclone copyto --progress "$COMPRESSED" "b2:${B2_BUCKET}/${B2_PREFIX}/${B2_OBJECT}" 2>> /var/log/cron.log; then
         echo "B2 upload succeeded" >> /var/log/cron.log
 
         # アップロード後のファイル確認
-        if rclone ls b2:${B2_BUCKET}/${B2_PREFIX}/$(basename "$COMPRESSED") 2>> /var/log/cron.log; then
+        if rclone ls "b2:${B2_BUCKET}/${B2_PREFIX}/${B2_OBJECT}" 2>> /var/log/cron.log; then
             echo "B2 upload verification succeeded" >> /var/log/cron.log
             return 0
         else
