@@ -124,6 +124,24 @@ Docker Container (cron)
     30日後自動削除
 ```
 
+## リストア・検証
+
+このツールはバックアップの**取得**のみを担当する。取得したバックアップの**復元・整合性検証・修復**は [yamisskey-doctor](https://github.com/yamisskey-dev/yamisskey-doctor) が担当：
+
+```bash
+# 最新バックアップから復元
+yamisskey-doctor restore --latest
+
+# 一時DBに復元して整合性を検証（定期実行推奨）
+yamisskey-doctor verify --latest
+```
+
+## 関連リポジトリ
+
+- [yamisskey-doctor](https://github.com/yamisskey-dev/yamisskey-doctor) - 復元・検証・修復
+- [yamisskey-host](https://github.com/yamisskey-dev/yamisskey-host) - バックアップ戦略を含む全体構成図（TrueNAS への rsync 系統は ansible ロール側で管理）
+- [yamisskey-ansible](https://github.com/yamisskey-dev/yamisskey-ansible) - サーバープロビジョニング
+
 ## ライセンス
 
 MIT License
